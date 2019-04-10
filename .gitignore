@@ -1,0 +1,5 @@
+.classpath
+.dockerignore
+.mvn/
+.project
+.settings/
