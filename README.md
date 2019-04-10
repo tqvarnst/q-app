@@ -30,6 +30,8 @@ An alternative way of deploying this is to use a chained build process where we 
 
 The following commands will create a chained build.
 
+    oc new-project demo-runtime
+
     oc new-build --name=q-app-build quay.io/quarkus/centos-quarkus-native-s2i:graalvm-1.0.0-rc15~https://github.com/tqvarnst/q-app.git 
 
     oc cancel-build bc/q-app-build
