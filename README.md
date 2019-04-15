@@ -44,7 +44,7 @@ The following commands will create a chained build.
         --docker-image=registry.access.redhat.com/ubi7-dev-preview/ubi-minimal \
         --source-image=q-app-build \
         --source-image-path='/home/quarkus/application:.' \
-        --dockerfile=$'FROM registry.access.redhat.com/ubi7-dev-preview/ubi-minimal:latest\nCOPY application /application\nCMD /application\nEXPOSE 8080' \
+        --dockerfile=$'FROM registry.access.redhat.com/ubi7-dev-preview/ubi-minimal:latest\nCOPY application /application\nCMD /application -Xmx8M -Xms8M -Xmn8M\nEXPOSE 8080' \
         --allow-missing-imagestream-tags
 
     # wait for the build to finish (web console or `oc logs -f bc/q-app`)
