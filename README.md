@@ -1,8 +1,18 @@
-# q-app
+# Different build example for Quarkus on OpenShift
 
 This is a small quarkus demo project that can be used to deploy to openshift
 
-## Build and run in the same container
+## Build and Deploy a Quarkus application using Java S2I
+
+    oc new-project demo-jvm
+    
+    oc new-app registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift~https://github.com/tqvarnst/q-app
+    
+    oc expose svc q-app
+    
+This will checkout this project into a container and build a JAR file and create a runnable container. The new-app command will also create a service and deployment configurations for us.
+
+## Build & Deploy a native image using S2I
 
 To deploy this application as a native build using the Quarkus S2I image do the following
 
