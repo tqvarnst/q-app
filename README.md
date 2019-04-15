@@ -16,7 +16,7 @@ This will checkout this project into a container and build a JAR file and create
 
 To deploy this application as a native build using the Quarkus S2I image do the following
 
-    oc new-project demo-s2i
+    oc new-project demo-s2i-native
 
     oc new-app --name=q-app quay.io/quarkus/centos-quarkus-native-s2i:graalvm-1.0.0-rc15~https://github.com/tqvarnst/q-app.git
 
@@ -40,7 +40,7 @@ An alternative way of deploying this is to use a chained build process where we 
 
 The following commands will create a chained build.
 
-    oc new-project demo-runtime
+    oc new-project demo-minimal-native
 
     oc new-build --name=q-app-build quay.io/quarkus/centos-quarkus-native-s2i:graalvm-1.0.0-rc15~https://github.com/tqvarnst/q-app.git 
 
