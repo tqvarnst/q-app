@@ -6,10 +6,10 @@ This is a small quarkus demo project that can be used to deploy to openshift
 
     oc new-project demo-jvm
     
-    oc new-app registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift~https://github.com/tqvarnst/q-app
+    oc new-app registry.access.redhat.com/ubi8/openjdk-11~https://github.com/tqvarnst/q-app
     
     oc expose svc q-app
-    
+
 This will checkout this project into a container and build a JAR file and create a runnable container. The new-app command will also create a service and deployment configurations for us.
 
 ## Build and Deploy a native Quarkus application using S2I
@@ -18,19 +18,26 @@ To deploy this application as a native build using the Quarkus S2I image do the 
 
     oc new-project demo-s2i-native
 
-    oc new-app --name=q-app quay.io/quarkus/centos-quarkus-native-s2i:graalvm-1.0.0-rc15~https://github.com/tqvarnst/q-app.git
+    oc import-image quarkus/ubi-quarkus-native-s2i --from=quay.io/quarkus/ubi-quarkus-native-s2i:20.1.0-java11 --confirm
 
-    oc cancel-build bc/q-app
-
-    oc patch bc/q-app -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"4Gi"}}}}'
-    
-    oc start-build q-app
+    oc new-app --name=q-app quay.io/quarkus/ubi-quarkus-native-s2i:20.1.0-java11~https://github.com/tqvarnst/q-app.git
 
     # wait for the build to finish (web console or `oc logs -f bc/q-app`)
 
     oc expose svc q-app
 
-The reason that we are cancelling the build shortly after creating it (in the `oc new-app` command) is because the default resource that OpenShift uses to build a native application using GraalVM isn't enough. Therefor we first patch the build config giving it more resources and then start the build again.
+> **NOTE:** GraalVM are using a lot of memory during build which may cause issues depending on your OpenShift clusters limitations. To increase the limits you can do the follow:
+>
+> First stop the build (if running)
+>
+>       oc cancel-build bc/q-app  
+> Then increase the memory of the pod to a suitable value
+>
+>       oc patch bc/q-app -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"4Gi"}}}}'
+> Then start the build again
+>
+>       oc start-build q-app
+
 
 ## Deploy as minimal runtime container
 
@@ -42,19 +49,15 @@ The following commands will create a chained build.
 
     oc new-project demo-minimal-native
 
-    oc new-build --name=q-app-build quay.io/quarkus/centos-quarkus-native-s2i:graalvm-1.0.0-rc15~https://github.com/tqvarnst/q-app.git 
+    oc import-image quarkus/ubi-quarkus-native-s2i --from=quay.io/quarkus/ubi-quarkus-native-s2i:20.1.0-java11 --confirm
 
-    oc cancel-build bc/q-app-build
-
-    oc patch bc/q-app-build -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"4Gi"}}}}'
-
-    oc start-build q-app-build
+    oc new-build --name=q-app-build quay.io/quarkus/ubi-quarkus-native-s2i:20.1.0-java11~https://github.com/tqvarnst/q-app.git 
 
     oc new-build --name=q-app \
         --docker-image=registry.access.redhat.com/ubi7-dev-preview/ubi-minimal \
         --source-image=q-app-build \
         --source-image-path='/home/quarkus/application:.' \
-        --dockerfile=$'FROM registry.access.redhat.com/ubi7-dev-preview/ubi-minimal:latest\nCOPY application /application\nCMD /application -Xmx8M -Xms8M -Xmn8M\nEXPOSE 8080' \
+        --dockerfile=$'FROM registry.access.redhat.com/ubi8/ubi-minimal:latest\nCOPY application /application\nCMD /application -Xmx8M -Xms8M -Xmn8M\nEXPOSE 8080' \
         --allow-missing-imagestream-tags
 
     # wait for the build to finish (web console or `oc logs -f bc/q-app`)
@@ -62,3 +65,15 @@ The following commands will create a chained build.
     oc new-app q-app
 
     oc expose svc q-app
+
+> **NOTE:** GraalVM are using a lot of memory during build which may cause issues depending on your OpenShift clusters limitations. To increase the limits you can do the follow:
+>
+> First stop the build (if running)
+>
+>       oc cancel-build bc/q-app  
+> Then increase the memory of the pod to a suitable value
+>
+>       oc patch bc/q-app -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"4Gi"}}}}'
+> Then start the build again
+>
+>       oc start-build q-app
